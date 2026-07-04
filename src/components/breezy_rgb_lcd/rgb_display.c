@@ -472,6 +472,10 @@ void rgb_display_set_buffer(lcd_cell_t *cells)
 void rgb_display_set_callbacks(const rgb_display_callbacks_t *cb)
 {
     s_callbacks = cb;
+    // The LUT was built at init from the CGA fallback palette (CGA color
+    // order: 1=blue, 4=red); rebuild it now that get_text_palette can
+    // supply the real ANSI-ordered palette.
+    rebuild_attr_lut();
 }
 
 // Rebuild ATTR_LUT when palette changes

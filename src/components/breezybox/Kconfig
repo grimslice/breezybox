@@ -1,0 +1,20 @@
+menu "BreezyBox"
+
+    config BREEZYBOX_SHELL_SCRIPTING
+        bool "Enable rich shell scripting (POSIX-ish subset)"
+        default n
+        help
+            Enable the BreezyBox shell script interpreter: quoting, parameter
+            expansion, command substitution, arithmetic, globbing, control
+            flow (if/while/for/case, functions), test/[, && and ||,
+            redirection, here-docs, and temp-file pipes.
+
+            When enabled, `sh <file>` and the init script are run through the
+            new interpreter (reading the whole file into a buffer), and the
+            interactive prompt keeps its per-line dispatch for simple commands.
+
+            When disabled (the default), behavior is byte-for-byte the current
+            line-at-a-time runner and no extra code or SRAM is used. Leave this
+            off on SRAM-constrained targets that do not need scripting.
+
+endmenu

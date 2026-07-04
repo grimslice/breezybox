@@ -5,3 +5,6 @@ sdkconfig.old
 managed_components/
 .DS_Store
 dist
+test/breezysh
+test/breezysh.dSYM
+__pycache__

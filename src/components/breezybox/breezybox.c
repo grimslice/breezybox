@@ -8,8 +8,45 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+#ifdef CONFIG_BREEZYBOX_SHELL_SCRIPTING
+#include "sh.h"
+
+// Read an entire file into a malloc'd buffer (control flow needs the whole
+// script, not line-at-a-time). Returns NULL on error; caller frees.
+static char *read_whole_file(const char *path)
+{
+    FILE *f = fopen(path, "rb");
+    if (!f) return NULL;
+    fseek(f, 0, SEEK_END);
+    long sz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (sz < 0) { fclose(f); return NULL; }
+    char *buf = malloc((size_t)sz + 1);
+    if (!buf) { fclose(f); return NULL; }
+    size_t n = fread(buf, 1, (size_t)sz, f);
+    fclose(f);
+    buf[n] = '\0';
+    return buf;
+}
+
+// Run a whole script file through the rich interpreter. Returns exit status.
+// argc/argv are the script's positional params: argv[0] = $0, argv[1..] = $1..
+static int run_script_file(const char *path, int argc, char **argv)
+{
+    char *src = read_whole_file(path);
+    if (!src) return -1;
+    sh_state st;
+    sh_state_init(&st);
+    int ret = sh_run_string_args(&st, src, argc, argv);
+    sh_state_free(&st);
+    free(src);
+    return ret;
+}
+#endif // CONFIG_BREEZYBOX_SHELL_SCRIPTING
 
 #define INIT_SCRIPT BREEZYBOX_MOUNT_POINT "/init.sh"
 #define DEFAULT_INIT "echo Welcome to BreezyBox!\n"
@@ -118,12 +155,21 @@ int cmd_sh(int argc, char **argv)
         path = resolved;
     }
     
+#ifdef CONFIG_BREEZYBOX_SHELL_SCRIPTING
+    // $0 = script path, $1..$N = the remaining args after `sh <script>`.
+    int ret = run_script_file(path, argc - 1, argv + 1);
+    if (ret == -1) {
+        printf("sh: %s: No such file\n", argv[1]);
+        return 1;
+    }
+    return ret;
+#else
     FILE *f = fopen(path, "r");
     if (!f) {
         printf("sh: %s: No such file\n", argv[1]);
         return 1;
     }
-    
+
     char line[256];
     int ret = 0;
     while (fgets(line, sizeof(line), f)) {
@@ -140,6 +186,7 @@ int cmd_sh(int argc, char **argv)
     }
     fclose(f);
     return ret;
+#endif // CONFIG_BREEZYBOX_SHELL_SCRIPTING
 }
 
 // ============ Init Script ============
@@ -161,14 +208,21 @@ static void run_init_script(void)
         f = fopen(INIT_SCRIPT, "r");
         if (!f) return;
     }
+    fclose(f);
 
+#ifdef CONFIG_BREEZYBOX_SHELL_SCRIPTING
+    // Run the whole init script through the rich interpreter.
+    (void)run_script_file(INIT_SCRIPT, 0, NULL);
+#else
+    f = fopen(INIT_SCRIPT, "r");
+    if (!f) return;
     char line[256];
     while (fgets(line, sizeof(line), f)) {
         size_t len = strlen(line);
         while (len > 0 && (line[len-1] == '\n' || line[len-1] == '\r' || line[len-1] == ' ')) {
             line[--len] = '\0';
         }
-        
+
         char *p = line;
         while (*p && isspace((unsigned char)*p)) p++;
         if (*p == '\0' || *p == '#') continue;
@@ -177,6 +231,7 @@ static void run_init_script(void)
         breezybox_exec(p);
     }
     fclose(f);
+#endif // CONFIG_BREEZYBOX_SHELL_SCRIPTING
 }
 
 // ============ Command Registration ============

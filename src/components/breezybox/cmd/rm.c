@@ -67,29 +67,45 @@ int cmd_rm(int argc, char **argv)
     }
     
     int recursive = 0;
+    int force = 0;
     int start_arg = 1;
-    
-    // Check for -r flag
-    if (argc >= 2 && strcmp(argv[1], "-r") == 0) {
-        recursive = 1;
-        start_arg = 2;
+
+    // Parse flags: -r, -f, and combined forms like -rf
+    while (start_arg < argc && argv[start_arg][0] == '-' && argv[start_arg][1] != '\0') {
+        for (int j = 1; argv[start_arg][j]; j++) {
+            switch (argv[start_arg][j]) {
+                case 'r': recursive = 1; break;
+                case 'f': force = 1; break;
+                default:
+                    printf("rm: invalid option -- '%c'\n", argv[start_arg][j]);
+                    return 1;
+            }
+        }
+        start_arg++;
     }
-    
+
     if (start_arg >= argc) {
-        printf("Usage: rm [-r] <file...>\n");
+        // With -f, no operands is not an error
+        if (force) {
+            return 0;
+        }
+        printf("Usage: rm [-rf] <file...>\n");
         return 1;
     }
-    
+
     int errors = 0;
-    
+
     for (int i = start_arg; i < argc; i++) {
         char path[256];
         breezybox_resolve_path(argv[i], path, sizeof(path));
         
         struct stat st;
         if (stat(path, &st) != 0) {
-            printf("rm: cannot remove '%s': No such file or directory\n", argv[i]);
-            errors++;
+            // With -f, ignore files that don't exist
+            if (!force) {
+                printf("rm: cannot remove '%s': No such file or directory\n", argv[i]);
+                errors++;
+            }
             continue;
         }
         

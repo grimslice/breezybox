@@ -819,6 +819,7 @@ extern int esp_register_freertos_tick_hook_for_cpu;
 extern int sdmmc_do_timing_tuning;
 extern int _close_r;
 extern int __wrap_getcwd;
+extern int getcwd;
 extern int hosted_sdio_read_reg;
 extern int rpc__event__sta_itwt_probe__init;
 extern int _ZN3nvs8HashList13HashListBlockC1Ev;
@@ -4881,6 +4882,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(sdmmc_do_timing_tuning),
     ESP_ELFSYM_EXPORT(_close_r),
     ESP_ELFSYM_EXPORT(__wrap_getcwd),
+    ESP_ELFSYM_EXPORT(getcwd),
     ESP_ELFSYM_EXPORT(hosted_sdio_read_reg),
     ESP_ELFSYM_EXPORT(rpc__event__sta_itwt_probe__init),
     ESP_ELFSYM_EXPORT(_ZN3nvs8HashList13HashListBlockC1Ev),

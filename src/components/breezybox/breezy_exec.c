@@ -294,6 +294,50 @@ static int try_run_external(const char *cmdline)
     return ret;
 }
 
+// Run a pre-parsed argv: external ELF first, then esp_console builtin.
+// Used by the shell-scripting core so it never re-serializes argv into a
+// command string for external commands (avoids quoting divergence).
+int breezybox_run_argv(int argc, char **argv, int *found)
+{
+    *found = 0;
+    if (argc == 0) return 0;
+
+    char *exe_path = find_executable(argv[0]);
+    if (exe_path && is_elf_file(exe_path)) {
+        int ret = run_elf(exe_path, argc, argv);
+        free(exe_path);
+        *found = 1;
+        return ret;
+    }
+    free(exe_path);
+
+    // Fall back to the esp_console registry. It parses a command string, so we
+    // rebuild one here; builtins registered by BreezyBox re-tokenize trivially.
+    size_t len = 0;
+    for (int i = 0; i < argc; i++) len += strlen(argv[i]) + 3;
+    char *line = malloc(len + 1);
+    if (!line) return -1;
+    line[0] = '\0';
+    for (int i = 0; i < argc; i++) {
+        if (i) strcat(line, " ");
+        // quote args containing spaces
+        if (strchr(argv[i], ' ')) {
+            strcat(line, "\"");
+            strcat(line, argv[i]);
+            strcat(line, "\"");
+        } else {
+            strcat(line, argv[i]);
+        }
+    }
+
+    int ret = 0;
+    esp_err_t err = esp_console_run(line, &ret);
+    free(line);
+    if (err == ESP_ERR_NOT_FOUND) { *found = 0; return 127; }
+    *found = 1;
+    return ret;
+}
+
 // Execute with output redirect using temp file
 static int exec_with_output_redirect(const char *cmd, const char *outfile, int append)
 {

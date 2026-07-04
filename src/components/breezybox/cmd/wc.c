@@ -29,27 +29,27 @@ int cmd_wc(int argc, char **argv)
         show_lines = show_words = show_chars = 1;
     }
     
-    if (!filename) {
-        printf("Usage: wc [-lwc] <file>\n");
-        return 1;
-    }
-    
+    FILE *f;
     char resolved[BREEZYBOX_MAX_PATH * 2 + 2];
-    const char *path = filename;
-    if (path[0] != '/') {
-        if (!breezybox_resolve_path(path, resolved, sizeof(resolved))) {
-            printf("wc: path too long\n");
+    if (filename) {
+        const char *path = filename;
+        if (path[0] != '/') {
+            if (!breezybox_resolve_path(path, resolved, sizeof(resolved))) {
+                printf("wc: path too long\n");
+                return 1;
+            }
+            path = resolved;
+        }
+        f = fopen(path, "r");
+        if (!f) {
+            printf("wc: %s: No such file\n", filename);
             return 1;
         }
-        path = resolved;
+    } else {
+        // No file: read from stdin
+        f = stdin;
     }
-    
-    FILE *f = fopen(path, "r");
-    if (!f) {
-        printf("wc: %s: No such file\n", filename);
-        return 1;
-    }
-    
+
     long lines = 0, words = 0, chars = 0;
     int in_word = 0;
     int c;
@@ -69,13 +69,19 @@ int cmd_wc(int argc, char **argv)
         }
     }
     
-    fclose(f);
-    
-    // Print results
-    if (show_lines) printf("%7ld ", lines);
-    if (show_words) printf("%7ld ", words);
-    if (show_chars) printf("%7ld ", chars);
-    printf("%s\n", filename);
+    if (f != stdin) {
+        fclose(f);
+    }
+
+    // Print results, space-separated with no leading/trailing padding
+    int first = 1;
+    if (show_lines) { printf("%ld", lines); first = 0; }
+    if (show_words) { printf("%s%ld", first ? "" : " ", words); first = 0; }
+    if (show_chars) { printf("%s%ld", first ? "" : " ", chars); first = 0; }
+    if (filename) {
+        printf(" %s", filename);
+    }
+    printf("\n");
     
     return 0;
 }

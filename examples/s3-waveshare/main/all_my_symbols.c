@@ -77,6 +77,9 @@ extern int isdigit;
 extern int isspace;
 extern int lseek;
 extern int unlink;
+extern int rename;
+extern int rmdir;
+extern int strspn;
 extern int heap_caps_realloc;
 extern int heap_caps_get_free_size;
 extern int heap_caps_check_integrity_all;
@@ -1829,6 +1832,9 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(isspace),
     ESP_ELFSYM_EXPORT(lseek),
     ESP_ELFSYM_EXPORT(unlink),
+    ESP_ELFSYM_EXPORT(rename),
+    ESP_ELFSYM_EXPORT(rmdir),
+    ESP_ELFSYM_EXPORT(strspn),
     ESP_ELFSYM_EXPORT(heap_caps_realloc),
     ESP_ELFSYM_EXPORT(heap_caps_get_free_size),
     ESP_ELFSYM_EXPORT(heap_caps_check_integrity_all),
