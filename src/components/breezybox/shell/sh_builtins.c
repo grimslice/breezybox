@@ -43,8 +43,10 @@ static int file_test(char op, const char *path)
         int m = op == 'r' ? R_OK : op == 'w' ? W_OK : X_OK;
         return access(path, m) == 0 ? 0 : 1;
     }
+    // No lstat on this platform, and the VFS has no symlinks anyway, so -h/-L
+    // fall back to stat -- S_ISLNK is then always false, the correct answer.
     struct stat sb;
-    if ((op == 'h' || op == 'L' ? lstat(path, &sb) : stat(path, &sb)) != 0)
+    if (stat(path, &sb) != 0)
         return 1;                          // false
     switch (op) {
         case 'e': return 0;

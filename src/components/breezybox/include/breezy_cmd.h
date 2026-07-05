@@ -22,3 +22,5 @@ int cmd_head(int argc, char **argv);
 int cmd_tail(int argc, char **argv);
 int cmd_more(int argc, char **argv);
 int cmd_wc(int argc, char **argv);
+int cmd_cksum(int argc, char **argv);
+int cmd_printf(int argc, char **argv);

@@ -163,8 +163,11 @@ void app_main(void)
         ESP_LOGW(TAG, "Keyboard task failed to start (USB console still works)");
     }
 
-    /* Start the BreezyBox shell on our stdio (LCD + USB). */
-    ESP_ERROR_CHECK(breezybox_start_stdio(8192, 5));
+    /* Start the BreezyBox shell on our stdio (LCD + USB).
+     * 24 KB stack: the rich script interpreter recurses through nested command
+     * substitution and pipelines, and newlib's vfprintf is stack-hungry -- 8 KB
+     * overflows on constructs like `x=$(echo a | wc -l)`. */
+    ESP_ERROR_CHECK(breezybox_start_stdio(24576, 5));
     register_commands();
 
     /* Keep P4-demo-specific symbols in the firmware for the ELF loader. */

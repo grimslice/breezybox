@@ -15,6 +15,8 @@ idf_component_register(
         "cmd/tail.c"
         "cmd/more.c"
         "cmd/wc.c"
+        "cmd/cksum.c"
+        "cmd/printf.c"
         "cmd/cp.c"
         "cmd/mv.c"
         "cmd/rm.c"
