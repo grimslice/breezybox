@@ -7,3 +7,4 @@ sdkconfig.ci
 dependencies.lock
 .clangd
 .DS_Store
+.cache

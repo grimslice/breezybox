@@ -11,6 +11,7 @@ Some depend on specific exports being available from your ESP-IDF firmware, usua
 
 - [gzip](gzip/gzip.c) - gzip compressor
 - [gunzip](gzip/gunzip.c) - gzip decompressor
+- [tar](tar/tar.c) - minimal tar, incl. `tar xzf bundle.tgz`
 - [wget](wget/) - minimal wget downloader clone
 
 ## Installation in BreezyBox

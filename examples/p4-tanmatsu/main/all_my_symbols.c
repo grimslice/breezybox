@@ -132,6 +132,7 @@ extern int pbuf_realloc;
 extern int netconn_shutdown;
 extern int bsp_internal_coprocessor_faults_callback;
 extern int gzclose;
+extern int gzseek;
 extern int rpc_init;
 extern int esp_aes_crypt_cbc;
 extern int spi_flash_chip_generic_wait_idle;
@@ -4195,6 +4196,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(netconn_shutdown),
     ESP_ELFSYM_EXPORT(bsp_internal_coprocessor_faults_callback),
     ESP_ELFSYM_EXPORT(gzclose),
+    ESP_ELFSYM_EXPORT(gzseek),
     ESP_ELFSYM_EXPORT(rpc_init),
     ESP_ELFSYM_EXPORT(esp_aes_crypt_cbc),
     ESP_ELFSYM_EXPORT(spi_flash_chip_generic_wait_idle),
