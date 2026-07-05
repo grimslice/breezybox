@@ -1,5 +1,8 @@
 #pragma once
 
+// PATH for executable search (colon-separated like Unix)
+#define BREEZYBOX_EXEC_PATH "/root/bin"
+
 /**
  * @brief Initialize the exec subsystem (call once at startup)
  */

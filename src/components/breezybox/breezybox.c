@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h>
 
 #ifdef CONFIG_BREEZYBOX_SHELL_SCRIPTING
 #include "sh.h"
@@ -311,6 +312,77 @@ static esp_err_t breezybox_init_common(const esp_console_cmd_t *extra_cmds,
     return ESP_OK;
 }
 
+// ============ Tab Completion ============
+
+// Add every entry of `dir` starting with `prefix` as a completion. linenoise
+// replaces the whole line, so each candidate is the first `keep_len` chars of
+// `buf` (everything before the name being completed) plus the entry name.
+static void complete_from_dir(linenoiseCompletions *lc, const char *dir,
+                              const char *buf, size_t keep_len,
+                              const char *prefix, bool mark_dirs)
+{
+    DIR *d = opendir(dir);
+    if (!d) return;
+    size_t plen = strlen(prefix);
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL) {
+        if (strncmp(e->d_name, prefix, plen) != 0) continue;
+        if (e->d_name[0] == '.' && prefix[0] != '.') continue;
+        char line[BREEZYBOX_MAX_PATH * 2];
+        bool is_dir = mark_dirs && e->d_type == DT_DIR;
+        size_t nlen = strlen(e->d_name);
+        if (keep_len + nlen + (is_dir ? 1 : 0) >= sizeof(line)) continue;
+        memcpy(line, buf, keep_len);
+        memcpy(line + keep_len, e->d_name, nlen);
+        if (is_dir) line[keep_len + nlen++] = '/';
+        line[keep_len + nlen] = '\0';
+        linenoiseAddCompletion(lc, line);
+    }
+    closedir(d);
+}
+
+// Complete the word starting at buf[word_off] as a filesystem path,
+// relative to the shell's cwd.
+static void complete_path(linenoiseCompletions *lc, const char *buf, size_t word_off)
+{
+    const char *word = buf + word_off;
+    const char *slash = strrchr(word, '/');
+    char dir[BREEZYBOX_MAX_PATH * 2];
+    const char *prefix;
+
+    if (slash) {
+        char dir_part[BREEZYBOX_MAX_PATH];
+        size_t dlen = (size_t)(slash - word);
+        if (dlen >= sizeof(dir_part)) return;
+        memcpy(dir_part, word, dlen);
+        dir_part[dlen] = '\0';
+        if (dlen == 0) strcpy(dir_part, "/");  // word like "/roo"
+        if (!breezybox_resolve_path(dir_part, dir, sizeof(dir))) return;
+        prefix = slash + 1;
+        word_off += (size_t)(prefix - word);  // keep the dir part verbatim
+    } else {
+        breezybox_get_cwd(dir, sizeof(dir));
+        prefix = word;
+    }
+    complete_from_dir(lc, dir, buf, word_off, prefix, true);
+}
+
+// Completion callback: registered commands plus /root/bin executables for the
+// first word; filesystem paths for arguments and for a first word containing
+// '/' (e.g. "./myapp").
+static void breezybox_completion(const char *buf, linenoiseCompletions *lc)
+{
+    const char *space = strrchr(buf, ' ');
+    if (space) {
+        complete_path(lc, buf, (size_t)(space + 1 - buf));
+    } else if (strchr(buf, '/')) {
+        complete_path(lc, buf, 0);
+    } else {
+        esp_console_get_completion(buf, lc);
+        complete_from_dir(lc, BREEZYBOX_EXEC_PATH, buf, 0, buf, false);
+    }
+}
+
 // ============ REPL Implementations ============
 
 // Linenoise-based REPL task for stdio mode
@@ -322,7 +394,7 @@ static void stdio_repl_task(void *arg)
     
     // Setup linenoise with esp_console's completion/hints
     linenoiseSetMultiLine(1);
-    linenoiseSetCompletionCallback(&esp_console_get_completion);
+    linenoiseSetCompletionCallback(&breezybox_completion);
     linenoiseSetHintsCallback((linenoiseHintsCallback *)&esp_console_get_hint);
     linenoiseHistorySetMaxLen(100);
     

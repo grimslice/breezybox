@@ -14,8 +14,7 @@
 #define TEMP_PIPE_FILE BREEZYBOX_MOUNT_POINT "/.pipe_tmp"
 #define TEMP_OUT_FILE  BREEZYBOX_MOUNT_POINT "/.out_tmp"
 
-// PATH for executable search (colon-separated like Unix)
-#define EXEC_PATH "/root/bin"
+#define EXEC_PATH BREEZYBOX_EXEC_PATH
 
 // ELF magic bytes
 static const uint8_t ELF_MAGIC[4] = {0x7f, 'E', 'L', 'F'};
