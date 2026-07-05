@@ -248,8 +248,16 @@ static int run_elf(const char *path, int argc, char **argv)
     
     ESP_LOGI(TAG, "Executing with %d args", argc);
     
-    // Execute - pass argc/argv like a normal main()
-    ret = esp_elf_request(&elf, 0, argc, argv);
+    // Execute - pass argc/argv like a normal main().
+    // Call the entry point directly: esp_elf_request() discards main's
+    // return value and always returns 0, which breaks exit-status checks.
+    if (!elf.entry) {
+        printf("ELF has no entry point\n");
+        esp_elf_deinit(&elf);
+        free(elf_data);
+        return -1;
+    }
+    ret = elf.entry(argc, argv);
     
     ESP_LOGI(TAG, "ELF returned: %d", ret);
     
