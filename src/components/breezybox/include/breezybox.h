@@ -52,6 +52,18 @@ esp_err_t breezybox_start_stdio_ex(size_t stack_size, uint32_t priority,
 esp_err_t breezybox_register_commands(void);
 
 /**
+ * @brief Execute one interactive command line.
+ *
+ * With CONFIG_BREEZYBOX_SHELL_SCRIPTING, runs through the shell interpreter
+ * (globbing, quoting, variables, &&/||, pipelines) with state persisting
+ * across calls; otherwise falls back to the lightweight breezybox_exec().
+ * Use this from custom REPLs (SSH, etc.) instead of breezybox_exec().
+ *
+ * @return Command exit status
+ */
+int breezybox_exec_line(const char *line);
+
+/**
  * @brief Force-export symbols for ELF runtime linking
  * 
  * Called automatically during init. Add functions to breezy_exports.c

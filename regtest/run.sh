@@ -42,6 +42,7 @@ runtest() {
 
 runtest tests/00_smoke.sh
 runtest tests/10_fs.sh
+runtest tests/15_glob.sh
 runtest tests/20_textutils.sh
 runtest tests/30_redir_pipe.sh
 runtest tests/40_tar.sh

@@ -312,6 +312,26 @@ static esp_err_t breezybox_init_common(const esp_console_cmd_t *extra_cmds,
     return ESP_OK;
 }
 
+int breezybox_exec_line(const char *line)
+{
+#ifdef CONFIG_BREEZYBOX_SHELL_SCRIPTING
+    // Run through the rich interpreter: globbing, quoting, variables,
+    // &&/||, multi-stage pipelines. The state persists across lines so
+    // variables set at the prompt survive.
+    static sh_state st;
+    static bool st_ready = false;
+    if (!st_ready) {
+        sh_state_init(&st);
+        st_ready = true;
+    }
+    int ret = sh_run_string(&st, line);
+    st.exiting = 0;  // `exit` at the prompt must not kill the REPL
+    return ret;
+#else
+    return breezybox_exec(line);
+#endif
+}
+
 // ============ Tab Completion ============
 
 // Add every entry of `dir` starting with `prefix` as a completion. linenoise
@@ -411,7 +431,7 @@ static void stdio_repl_task(void *arg)
         // Skip empty lines
         if (strlen(line) > 0) {
             linenoiseHistoryAdd(line);
-            breezybox_exec(line);
+            breezybox_exec_line(line);
         }
         
         linenoiseFree(line);
