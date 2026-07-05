@@ -1,5 +1,6 @@
 #include "breezy_vfs.h"
 #include "esp_littlefs.h"
+#include "esp_vfs.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -77,6 +78,51 @@ char *breezybox_resolve_path(const char *path, char *buf, size_t size)
     return buf;
 }
 
+// ---- /dev/null ---------------------------------------------------------
+// The shell's redirections (`>/dev/null`, fd-close) fopen this path, and it
+// doesn't exist in the ESP VFS by default: writes are swallowed, reads EOF.
+
+static ssize_t devnull_write(int fd, const void *data, size_t size)
+{
+    (void)fd; (void)data;
+    return size;
+}
+
+static ssize_t devnull_read(int fd, void *data, size_t size)
+{
+    (void)fd; (void)data; (void)size;
+    return 0;   // EOF
+}
+
+static int devnull_open(const char *path, int flags, int mode)
+{
+    (void)path; (void)flags; (void)mode;
+    return 0;
+}
+
+static int devnull_close(int fd) { (void)fd; return 0; }
+
+static int devnull_fstat(int fd, struct stat *st)
+{
+    (void)fd;
+    memset(st, 0, sizeof(*st));
+    st->st_mode = S_IFCHR;
+    return 0;
+}
+
+static esp_err_t devnull_register(void)
+{
+    esp_vfs_t vfs = {
+        .flags = ESP_VFS_FLAG_DEFAULT,
+        .write = devnull_write,
+        .read  = devnull_read,
+        .open  = devnull_open,
+        .close = devnull_close,
+        .fstat = devnull_fstat,
+    };
+    return esp_vfs_register("/dev/null", &vfs, NULL);
+}
+
 esp_err_t breezybox_vfs_init(void)
 {
     esp_vfs_littlefs_conf_t conf = {
@@ -101,5 +147,15 @@ esp_err_t breezybox_vfs_init(void)
     printf("LittleFS: %d KB total, %d KB used\n", (int)(total / 1024), (int)(used / 1024));
 
     strcpy(s_cwd, BREEZYBOX_MOUNT_POINT);
+
+    ret = devnull_register();
+    if (ret != ESP_OK) {
+        printf("Failed to register /dev/null: %s (raise CONFIG_VFS_MAX_COUNT?)\n",
+               esp_err_to_name(ret));
+    } else {
+        FILE *t = fopen("/dev/null", "w");
+        printf("/dev/null self-test: %s\n", t ? "ok" : "FAILED");
+        if (t) fclose(t);
+    }
     return ESP_OK;
 }

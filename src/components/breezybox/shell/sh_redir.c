@@ -3,6 +3,8 @@
 // lvalue FILE* on both newlib and glibc), so builtins and the core see the
 // redirected streams without any fd juggling.
 #include "sh_port.h"
+#include <errno.h>
+#include <string.h>
 
 static FILE **sh_stream_slot(int fd)
 {
@@ -37,7 +39,13 @@ int sh_redir_apply(const sh_redir_rt *items, int n, sh_redir_saved *saved)
                 continue;
             }
         }
-        if (!f) { sh_redir_restore(saved); return -1; }
+        if (!f) {
+            const char *p = (it->op == SH_RD_CLOSE) ? "/dev/null" : it->path;
+            fprintf(stderr, "sh: cannot open %s: %s (errno %d)\n",
+                    p, strerror(errno), errno);
+            sh_redir_restore(saved);
+            return -1;
+        }
         if (saved->nopened < 8) saved->opened[saved->nopened++] = f;
         saved->touched[it->fd] = 1;
         *slot = f;

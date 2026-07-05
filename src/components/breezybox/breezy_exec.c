@@ -311,24 +311,28 @@ int breezybox_run_argv(int argc, char **argv, int *found)
     }
     free(exe_path);
 
-    // Fall back to the esp_console registry. It parses a command string, so we
-    // rebuild one here; builtins registered by BreezyBox re-tokenize trivially.
+    // Fall back to the esp_console registry. It re-tokenizes a command STRING
+    // via esp_console_split_argv(), whose only recognized escapes are \\, \" and
+    // "\ " -- an unrecognized escape like \n is dropped entirely. So we must
+    // rebuild a line that reproduces argv byte-for-byte: wrap every arg in
+    // double quotes and escape \ and " inside. A naive join would silently
+    // corrupt any arg containing backslashes (e.g. printf 'a\nb\nc\n') or empty
+    // args. Worst case each byte doubles, plus two quotes and a space per arg.
     size_t len = 0;
-    for (int i = 0; i < argc; i++) len += strlen(argv[i]) + 3;
+    for (int i = 0; i < argc; i++) len += 2 * strlen(argv[i]) + 3;
     char *line = malloc(len + 1);
     if (!line) return -1;
-    line[0] = '\0';
+    char *w = line;
     for (int i = 0; i < argc; i++) {
-        if (i) strcat(line, " ");
-        // quote args containing spaces
-        if (strchr(argv[i], ' ')) {
-            strcat(line, "\"");
-            strcat(line, argv[i]);
-            strcat(line, "\"");
-        } else {
-            strcat(line, argv[i]);
+        if (i) *w++ = ' ';
+        *w++ = '"';
+        for (const char *p = argv[i]; *p; p++) {
+            if (*p == '\\' || *p == '"') *w++ = '\\';
+            *w++ = *p;
         }
+        *w++ = '"';
     }
+    *w = '\0';
 
     int ret = 0;
     esp_err_t err = esp_console_run(line, &ret);

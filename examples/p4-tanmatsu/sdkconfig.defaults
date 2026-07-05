@@ -89,3 +89,9 @@ CONFIG_HTTPD_MAX_REQ_HDR_LEN=512
 CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC=y
 
 CONFIG_BREEZYBOX_SHELL_SCRIPTING=y
+# Room for extra VFS drivers (vterm, ssh, /dev/null) beyond the IDF built-ins.
+CONFIG_VFS_MAX_COUNT=16
+# IDF 5.5 built-in /dev/null (nullfs) never frees its fd slots (close is a
+# no-op OR with 0), so ~16 opens in it starts returning EMFILE. Use breezybox's
+# own /dev/null driver instead (registered in breezybox_vfs_init).
+CONFIG_VFS_INITIALIZE_DEV_NULL=n

@@ -5,9 +5,17 @@
 
 int cmd_cat(int argc, char **argv)
 {
+    char buf[128];
+    size_t n;
+
     if (argc < 2) {
-        printf("Usage: cat <file>\n");
-        return 1;
+        // No file argument: copy stdin to stdout (POSIX cat), so `cat < file`
+        // and `... | cat` work under the shell's stream-swapping redirection.
+        while ((n = fread(buf, 1, sizeof(buf), stdin)) > 0) {
+            fwrite(buf, 1, n, stdout);
+        }
+        fflush(stdout);
+        return 0;
     }
 
     char resolved[BREEZYBOX_MAX_PATH * 2 + 2];
@@ -27,8 +35,6 @@ int cmd_cat(int argc, char **argv)
         return 1;
     }
 
-    char buf[128];
-    size_t n;
     while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
         fwrite(buf, 1, n, stdout);
     }

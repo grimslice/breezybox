@@ -3,6 +3,21 @@
 #include "sh_port.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+
+// True if two absolute paths name the same directory. A textual match is enough
+// in the common case; otherwise compare (st_dev, st_ino) so a symlinked spelling
+// like /tmp vs /private/tmp still counts as equal.
+static int same_dir(const char *a, const char *b)
+{
+    if (strcmp(a, b) == 0) return 1;
+    struct stat sa, sb;
+    if (stat(a, &sa) != 0 || stat(b, &sb) != 0) return 0;
+    // Filesystems without real inodes (littlefs/FAT on device) report st_ino=0
+    // for every entry, which would make any two directories compare equal.
+    if (sa.st_ino == 0 || sb.st_ino == 0) return 0;
+    return sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino;
+}
 
 void sh_state_init(sh_state *st)
 {
@@ -29,11 +44,17 @@ void sh_state_init(sh_state *st)
     // real environment on host; fall back to the actual cwd for PWD.
     const char *home = getenv("HOME");
     if (home) sh_set(st, "HOME", home);
-    // Establish the logical cwd: trust an absolute inherited $PWD (so symlinked
-    // paths like /tmp survive), else fall back to the physical cwd.
+    // Establish the logical cwd. The physical cwd (sh_port_getcwd) is the source
+    // of truth: on device it is the VFS's own tracked cwd, and $PWD is a stale
+    // global left over from an earlier `sh` invocation (an interactive `cd`
+    // updates the VFS cwd but not the environment). Only trust an inherited
+    // absolute $PWD when it actually names that same directory -- that keeps a
+    // symlinked spelling like /tmp (vs /private/tmp) on host, but discards a
+    // stale /root when the real cwd is /root/share/regtest.
     char buf[512];
+    sh_port_getcwd(buf, sizeof(buf));
     const char *pwd = getenv("PWD");
-    if (!pwd || pwd[0] != '/') { sh_port_getcwd(buf, sizeof(buf)); pwd = buf; }
+    if (!pwd || pwd[0] != '/' || !same_dir(pwd, buf)) pwd = buf;
     st->cwd = strdup(pwd);
     sh_set(st, "PWD", pwd);
     sh_export(st, "PWD");   // dash keeps $PWD exported into the environment
