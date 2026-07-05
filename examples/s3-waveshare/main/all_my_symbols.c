@@ -42,6 +42,7 @@ extern int gzread;
 extern int gzwrite;
 extern int gzclose;
 extern int gzerror;
+extern int gzseek;
 extern int deflateInit2_;
 extern int deflate;
 extern int deflateEnd;
@@ -1797,6 +1798,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(gzwrite),
     ESP_ELFSYM_EXPORT(gzclose),
     ESP_ELFSYM_EXPORT(gzerror),
+    ESP_ELFSYM_EXPORT(gzseek),
     ESP_ELFSYM_EXPORT(deflateInit2_),
     ESP_ELFSYM_EXPORT(deflate),
     ESP_ELFSYM_EXPORT(deflateEnd),

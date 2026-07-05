@@ -104,6 +104,7 @@ void breezybox_export_symbols(void)
         (void*)gzwrite,
         (void*)gzclose,
         (void*)gzerror,
+        (void*)gzseek,
         (void*)deflateInit2_,
         (void*)deflate,
         (void*)deflateEnd,

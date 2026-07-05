@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-07-05
 
 ### Added
 
 - Optional rich shell scripting (`CONFIG_BREEZYBOX_SHELL_SCRIPTING`, default
   off).
+- Tab completion for paths
+- More commands: tar, grep, diff, printf, cksum
+- Shell tests on the build host
+- Regression tests for running on the target device
 
 ## [1.0.5] - 2026-06-29
 
