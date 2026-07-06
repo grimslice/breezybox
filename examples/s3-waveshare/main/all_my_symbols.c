@@ -36,6 +36,16 @@ extern int rgb_gfx_rectfill;
 extern int bt_keyboard_is_pressed;
 extern int bt_keyboard_get_modifiers;
 extern int bt_keyboard_connected;
+extern int snd_init;
+extern int snd_note_on;
+extern int snd_note_off;
+extern int snd_all_off;
+extern int snd_set_volume;
+extern int snd_get_volume;
+extern int snd_stream_open;
+extern int snd_stream_space;
+extern int snd_stream_write;
+extern int snd_stream_close;
 extern int roundf;
 extern int gzopen;
 extern int gzread;
@@ -1792,6 +1802,16 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(bt_keyboard_is_pressed),
     ESP_ELFSYM_EXPORT(bt_keyboard_get_modifiers),
     ESP_ELFSYM_EXPORT(bt_keyboard_connected),
+    ESP_ELFSYM_EXPORT(snd_init),
+    ESP_ELFSYM_EXPORT(snd_note_on),
+    ESP_ELFSYM_EXPORT(snd_note_off),
+    ESP_ELFSYM_EXPORT(snd_all_off),
+    ESP_ELFSYM_EXPORT(snd_set_volume),
+    ESP_ELFSYM_EXPORT(snd_get_volume),
+    ESP_ELFSYM_EXPORT(snd_stream_open),
+    ESP_ELFSYM_EXPORT(snd_stream_space),
+    ESP_ELFSYM_EXPORT(snd_stream_write),
+    ESP_ELFSYM_EXPORT(snd_stream_close),
     ESP_ELFSYM_EXPORT(roundf),
     ESP_ELFSYM_EXPORT(gzopen),
     ESP_ELFSYM_EXPORT(gzread),

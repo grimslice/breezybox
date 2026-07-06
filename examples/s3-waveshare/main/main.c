@@ -146,6 +146,9 @@ static void main_loop(void)
 
 void app_main(void)
 {
+    extern void breezy_s3_export_symbols(void);
+    breezy_s3_export_symbols();
+
     usb_serial_jtag_driver_config_t usb_config = {
         .tx_buffer_size = 256,
         .rx_buffer_size = 256,

@@ -26,6 +26,8 @@
 #include "freertos/task.h"
 
 #include "my_console_io.h"
+#include "snd_core.h"
+#include "snd_port.h"
 
 #ifdef vTaskDelayUntil
 #undef vTaskDelayUntil
@@ -72,4 +74,19 @@ void breezy_p4_export_symbols(void)
     s_export_sink = (const void *)bt_keyboard_is_pressed;
     s_export_sink = (const void *)bt_keyboard_get_modifiers;
     s_export_sink = (const void *)bt_keyboard_connected;
+    /* Anchor this project's snd_port so the linker pulls it from libmain
+     * before resolving the breezy_sound component against it. */
+    s_export_sink = (const void *)snd_port_init;
+    /* snd_core mixer API (soundkeys and future sound apps). */
+    s_export_sink = (const void *)snd_init;
+    s_export_sink = (const void *)snd_note_on;
+    s_export_sink = (const void *)snd_note_off;
+    s_export_sink = (const void *)snd_all_off;
+    s_export_sink = (const void *)snd_set_volume;
+    s_export_sink = (const void *)snd_get_volume;
+    /* PCM stream API (modplay and future streaming apps). */
+    s_export_sink = (const void *)snd_stream_open;
+    s_export_sink = (const void *)snd_stream_space;
+    s_export_sink = (const void *)snd_stream_write;
+    s_export_sink = (const void *)snd_stream_close;
 }

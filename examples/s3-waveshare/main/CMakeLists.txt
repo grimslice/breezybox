@@ -5,6 +5,8 @@ idf_component_register(
         "main.c"
         "my_console_io.c"
         "cmd_testgfx.c"
+        "snd_port.c"
+        "elf_extras.c"
 
     # --- Dependencies ---
     PRIV_REQUIRES
@@ -13,6 +15,7 @@ idf_component_register(
         fatfs
         esp_lcd
         breezybox
+        breezy_sound
         breezy_bt
         breezy_rgb_lcd
         heap

@@ -432,7 +432,7 @@ dependencies:
     - esp32s3
     version: 1.0.3
   valdanylchuk/breezybox:
-    component_hash: e7f5f47be5e746da97b85c64348cccbac6c004b8f214bc5dc5b5f455a1e30220
+    component_hash: e6c87ffa63a40e63fff5daf7da300e13296209968cf97aad6dc6ae36ec189bc5
     dependencies:
     - name: espressif/elf_loader
       registry_url: https://components.espressif.com
@@ -463,13 +463,13 @@ dependencies:
     - esp32p4
     - esp32s2
     - esp32s3
-    version: 1.0.4
+    version: 1.1.0
 direct_dependencies:
 - badgeteam/badge-bsp
 - idf
 - nicolaielectronics/tanmatsu-wifi
 - nicolaielectronics/wifi-manager
 - valdanylchuk/breezybox
-manifest_hash: e0d830128519f7f3771704654251e3ae2d127125da678314fdffe80c116b0bbc
+manifest_hash: b6435921f1a9ccc0b36a1c1c7c7cf419a9574ceaf0e102353e0548580f378aef
 target: esp32p4
 version: 2.0.0

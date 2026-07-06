@@ -6,6 +6,7 @@ idf_component_register(
         "tanmatsu_keyboard.c"
         "net_bringup.c"
         "cmd_testgfx.c"     # built-in graphics smoke test
+        "snd_port.c"        # breezy_sound hardware port (ES8156 via badge-bsp)
         "elf_extras.c"      # extra symbols exported to ELF apps
 
     PRIV_REQUIRES
@@ -19,6 +20,7 @@ idf_component_register(
         breezybox
         breezy_term
         breezy_tanmatsu_lcd
+        breezy_sound
         # Tanmatsu hardware
         badge-bsp
         # Networking: net_bringup.c includes wifi_remote.h (tanmatsu-wifi).

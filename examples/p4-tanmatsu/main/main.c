@@ -104,7 +104,7 @@ static int cmd_netup(int argc, char **argv)
     return err == ESP_OK ? 0 : 1;
 }
 
-extern int cmd_testgfx(int argc, char **argv);  /* cmd_testgfx.c */
+extern int cmd_testgfx(int argc, char **argv);    /* cmd_testgfx.c */
 
 static void register_commands(void)
 {
