@@ -7,3 +7,5 @@ dependencies:
      version: '>=1.0.2'
   valdanylchuk/breezy_rgb_lcd:
      version: '>=1.0.1'
+  valdanylchuk/breezy_sound:
+     version: '>=1.0.0'

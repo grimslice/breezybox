@@ -37,6 +37,7 @@ I try to keep BreezyBox modular, so some components can be reused separately.
 - [![Component Registry](https://components.espressif.com/components/valdanylchuk/breezy_bt/badge.svg)](https://components.espressif.com/components/valdanylchuk/breezy_bt) [breezy_bt](src/components/breezy_bt/) - Bluetooth keyboard
 - [![Component Registry](https://components.espressif.com/components/valdanylchuk/breezy_ssh/badge.svg)](https://components.espressif.com/components/valdanylchuk/breezy_ssh) [breezy_ssh](src/components/breezy_ssh/) - basic sshd
 - [![Component Registry](https://components.espressif.com/components/valdanylchuk/breezy_rgb_lcd/badge.svg)](https://components.espressif.com/components/valdanylchuk/breezy_rgb_lcd) [breezy_rgb_lcd](src/components/breezy_rgb_lcd/)
+- [![Component Registry](https://components.espressif.com/components/valdanylchuk/breezy_sound/badge.svg)](https://components.espressif.com/components/valdanylchuk/breezy_sound) [breezy_sound](src/components/breezy_sound/)
 
 ## ELF Apps
 

@@ -1,5 +1,3 @@
 .cache
 reference
-# host_test build products (regenerate: cc line in host_test/mix_test.c header)
-host_test/mix_test
-host_test/wav/
+dependencies.lock
