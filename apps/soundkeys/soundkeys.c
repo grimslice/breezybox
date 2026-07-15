@@ -29,7 +29,7 @@ int  snd_init(void);
 int  snd_note_on(int voice, float freq_hz, int wave, int vol);
 void snd_note_off(int voice);
 void snd_all_off(void);
-void snd_set_volume(int pct);
+void snd_set_volume(int pct);   /* 0..100 percent */
 
 enum {
     SND_WAVE_TRIANGLE = 0, SND_WAVE_TILTED_SAW, SND_WAVE_SAW, SND_WAVE_SQUARE,
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
         oct_up_held = up;
         oct_down_held = dn;
 
-        /* Volume: Left = softer, Right = louder (capped at the 100% default). */
+        /* Volume: Left = softer, Right = louder. */
         bool vup = bt_keyboard_is_pressed(KEY_RIGHT);
         bool vdn = bt_keyboard_is_pressed(KEY_LEFT);
         if (vup && !vol_up_held && volume < 100) {

@@ -92,6 +92,16 @@ void snd_stream_close(void)
     g_dev = 0;
 }
 
+/* Just a stub in SDL version. */
+static int g_volume = 100;
+void snd_set_volume(int pct)
+{
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    g_volume = pct;
+}
+int snd_get_volume(void) { return g_volume; }
+
 /* No SDL window, so no SDL key events: report "no keyboard" and let the
  * app use raw stdin instead. */
 int bt_keyboard_is_pressed(uint8_t keycode) { (void)keycode; return 0; }

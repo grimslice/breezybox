@@ -46,6 +46,10 @@ extern int snd_stream_open;
 extern int snd_stream_space;
 extern int snd_stream_write;
 extern int snd_stream_close;
+extern int snd_p8_load;
+extern int snd_p8_sfx;
+extern int snd_p8_music;
+extern int snd_p8_stop;
 extern int roundf;
 extern int gzopen;
 extern int gzread;
@@ -1251,6 +1255,7 @@ extern int mspi_timing_config_psram_set_tuning_regs;
 extern int spi_flash_hal_gpspi_supports_direct_read;
 extern int _putc1;
 extern int __floatsidf;
+extern int __fixunsdfdi;
 extern int _fopen_r;
 extern int esp_system_reset_modules_on_exit;
 extern int mspi_timing_change_speed_mode_cache_safe;
@@ -1812,6 +1817,10 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(snd_stream_space),
     ESP_ELFSYM_EXPORT(snd_stream_write),
     ESP_ELFSYM_EXPORT(snd_stream_close),
+    ESP_ELFSYM_EXPORT(snd_p8_load),
+    ESP_ELFSYM_EXPORT(snd_p8_sfx),
+    ESP_ELFSYM_EXPORT(snd_p8_music),
+    ESP_ELFSYM_EXPORT(snd_p8_stop),
     ESP_ELFSYM_EXPORT(roundf),
     ESP_ELFSYM_EXPORT(gzopen),
     ESP_ELFSYM_EXPORT(gzread),
@@ -3017,6 +3026,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(spi_flash_hal_gpspi_supports_direct_read),
     ESP_ELFSYM_EXPORT(_putc1),
     ESP_ELFSYM_EXPORT(__floatsidf),
+    ESP_ELFSYM_EXPORT(__fixunsdfdi),
     ESP_ELFSYM_EXPORT(_fopen_r),
     ESP_ELFSYM_EXPORT(esp_system_reset_modules_on_exit),
     ESP_ELFSYM_EXPORT(mspi_timing_change_speed_mode_cache_safe),

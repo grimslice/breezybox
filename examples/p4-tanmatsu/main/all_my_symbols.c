@@ -30,6 +30,10 @@ extern int snd_stream_open;
 extern int snd_stream_space;
 extern int snd_stream_write;
 extern int snd_stream_close;
+extern int snd_p8_load;
+extern int snd_p8_sfx;
+extern int snd_p8_music;
+extern int snd_p8_stop;
 extern int hmac_hal_clean;
 extern int pmu_sleep_enable_regdma_backup;
 extern int heap_caps_realloc;
@@ -478,7 +482,6 @@ extern int rpc__req__wifi_set_okc_support__init;
 extern int httpd_sess_new;
 extern int ipaddr_addr;
 extern int bootloader_flash_reset_chip;
-extern int esp_config_l2_cache_mode;
 extern int sdmmc_send_cmd;
 extern int transport_drv_serial_tx;
 extern int rpc__req__iface_mac_addr_len_get__init;
@@ -2182,7 +2185,6 @@ extern int udp_netif_ip_addr_changed;
 extern int _putchar_r;
 extern int mbedtls_gcm_auth_decrypt_soft;
 extern int regi2c_ctrl_read_reg_mask;
-extern int mipi_dsi_hal_host_dpi_set_color_coding;
 extern int _asprintf_r;
 extern int esp_restart_noos;
 extern int rpc__resp__wifi_set_country__init;
@@ -2501,7 +2503,6 @@ extern int _ZN3nvs19NVSPartitionManager16deinit_partitionEPKc;
 extern int aes_hal_gcm_init;
 extern int rgb_gfx_rectfill;
 extern int mbedtls_ecp_point_init;
-extern int gdma_hal_enable_access_encrypt_mem;
 extern int mbedtls_mpi_random;
 extern int nd6_clear_destination_cache;
 extern int gdma_ahb_hal_read_intr_status;
@@ -2657,7 +2658,6 @@ extern int hci_drv_show_configuration;
 extern int spi_flash_chip_generic_erase_block;
 extern int tcp_rst_netif;
 extern int bmi2_get_feat_config;
-extern int _ZN3nvs7Storage8findItemEhNS_8ItemTypeEPKcRPNS_4PageERNS_4ItemEhNS_9VerOffsetE;
 extern int dw_gdma_del_link_list;
 extern int _strtoul_r;
 extern int sdmmc_init_sd_bus_width;
@@ -2868,6 +2868,7 @@ extern int rgb_display_set_callbacks;
 extern int rpc__resp__eap_set_new_password__init;
 extern int mspi_timing_config_psram_set_tuning_phase;
 extern int __floatsidf;
+extern int __fixunsdfdi;
 extern int _fopen_r;
 extern int esp_timer_stop;
 extern int ecc_hal_write_mul_param;
@@ -2912,7 +2913,6 @@ extern int rpc__req__otabegin__init;
 extern int bsearch;
 extern int rtc_clk_slow_freq_get_hz;
 extern int netbuf_delete;
-extern int gdma_axi_hal_enable_access_encrypt_mem;
 extern int esp_vfs_select;
 extern int s_get_cache_state;
 extern int mpi_hal_read_result_hw_op;
@@ -3519,7 +3519,6 @@ extern int rtc_clk_apll_coeff_set;
 extern int rpc__req__wifi_get_bandwidth__init;
 extern int esp_transport_poll_read;
 extern int parse_tlv;
-extern int _ZN3nvs4Item14calculateCrc32EPKhj;
 extern int heap_caps_check_integrity_all;
 extern int mbedtls_rsa_import;
 extern int wifi_scan_default_params__descriptor;
@@ -3622,7 +3621,6 @@ extern int rpc__req__feature_control__init;
 extern int regdma_link_get_config_mode;
 extern int roundf;
 extern int gdma_axi_hal_clear_crc;
-extern int rom_spiflash_api_funcs;
 extern int __wrap_open;
 extern int esp_err_to_name;
 extern int rpc__resp__eap_clear_password__descriptor;
@@ -4104,6 +4102,10 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(snd_stream_space),
     ESP_ELFSYM_EXPORT(snd_stream_write),
     ESP_ELFSYM_EXPORT(snd_stream_close),
+    ESP_ELFSYM_EXPORT(snd_p8_load),
+    ESP_ELFSYM_EXPORT(snd_p8_sfx),
+    ESP_ELFSYM_EXPORT(snd_p8_music),
+    ESP_ELFSYM_EXPORT(snd_p8_stop),
     ESP_ELFSYM_EXPORT(hmac_hal_clean),
     ESP_ELFSYM_EXPORT(pmu_sleep_enable_regdma_backup),
     ESP_ELFSYM_EXPORT(heap_caps_realloc),
@@ -4552,7 +4554,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(httpd_sess_new),
     ESP_ELFSYM_EXPORT(ipaddr_addr),
     ESP_ELFSYM_EXPORT(bootloader_flash_reset_chip),
-    ESP_ELFSYM_EXPORT(esp_config_l2_cache_mode),
     ESP_ELFSYM_EXPORT(sdmmc_send_cmd),
     ESP_ELFSYM_EXPORT(transport_drv_serial_tx),
     ESP_ELFSYM_EXPORT(rpc__req__iface_mac_addr_len_get__init),
@@ -6256,7 +6257,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(_putchar_r),
     ESP_ELFSYM_EXPORT(mbedtls_gcm_auth_decrypt_soft),
     ESP_ELFSYM_EXPORT(regi2c_ctrl_read_reg_mask),
-    ESP_ELFSYM_EXPORT(mipi_dsi_hal_host_dpi_set_color_coding),
     ESP_ELFSYM_EXPORT(_asprintf_r),
     ESP_ELFSYM_EXPORT(esp_restart_noos),
     ESP_ELFSYM_EXPORT(rpc__resp__wifi_set_country__init),
@@ -6575,7 +6575,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(aes_hal_gcm_init),
     ESP_ELFSYM_EXPORT(rgb_gfx_rectfill),
     ESP_ELFSYM_EXPORT(mbedtls_ecp_point_init),
-    ESP_ELFSYM_EXPORT(gdma_hal_enable_access_encrypt_mem),
     ESP_ELFSYM_EXPORT(mbedtls_mpi_random),
     ESP_ELFSYM_EXPORT(nd6_clear_destination_cache),
     ESP_ELFSYM_EXPORT(gdma_ahb_hal_read_intr_status),
@@ -6731,7 +6730,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(spi_flash_chip_generic_erase_block),
     ESP_ELFSYM_EXPORT(tcp_rst_netif),
     ESP_ELFSYM_EXPORT(bmi2_get_feat_config),
-    ESP_ELFSYM_EXPORT(_ZN3nvs7Storage8findItemEhNS_8ItemTypeEPKcRPNS_4PageERNS_4ItemEhNS_9VerOffsetE),
     ESP_ELFSYM_EXPORT(dw_gdma_del_link_list),
     ESP_ELFSYM_EXPORT(_strtoul_r),
     ESP_ELFSYM_EXPORT(sdmmc_init_sd_bus_width),
@@ -6942,6 +6940,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(rpc__resp__eap_set_new_password__init),
     ESP_ELFSYM_EXPORT(mspi_timing_config_psram_set_tuning_phase),
     ESP_ELFSYM_EXPORT(__floatsidf),
+    ESP_ELFSYM_EXPORT(__fixunsdfdi),
     ESP_ELFSYM_EXPORT(_fopen_r),
     ESP_ELFSYM_EXPORT(esp_timer_stop),
     ESP_ELFSYM_EXPORT(ecc_hal_write_mul_param),
@@ -6986,7 +6985,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(bsearch),
     ESP_ELFSYM_EXPORT(rtc_clk_slow_freq_get_hz),
     ESP_ELFSYM_EXPORT(netbuf_delete),
-    ESP_ELFSYM_EXPORT(gdma_axi_hal_enable_access_encrypt_mem),
     ESP_ELFSYM_EXPORT(esp_vfs_select),
     ESP_ELFSYM_EXPORT(s_get_cache_state),
     ESP_ELFSYM_EXPORT(mpi_hal_read_result_hw_op),
@@ -7593,7 +7591,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(rpc__req__wifi_get_bandwidth__init),
     ESP_ELFSYM_EXPORT(esp_transport_poll_read),
     ESP_ELFSYM_EXPORT(parse_tlv),
-    ESP_ELFSYM_EXPORT(_ZN3nvs4Item14calculateCrc32EPKhj),
     ESP_ELFSYM_EXPORT(heap_caps_check_integrity_all),
     ESP_ELFSYM_EXPORT(mbedtls_rsa_import),
     ESP_ELFSYM_EXPORT(wifi_scan_default_params__descriptor),
@@ -7696,7 +7693,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(regdma_link_get_config_mode),
     ESP_ELFSYM_EXPORT(roundf),
     ESP_ELFSYM_EXPORT(gdma_axi_hal_clear_crc),
-    ESP_ELFSYM_EXPORT(rom_spiflash_api_funcs),
     ESP_ELFSYM_EXPORT(__wrap_open),
     ESP_ELFSYM_EXPORT(esp_err_to_name),
     ESP_ELFSYM_EXPORT(rpc__resp__eap_clear_password__descriptor),

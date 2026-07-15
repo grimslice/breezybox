@@ -8,6 +8,7 @@ idf_component_register(
         "cmd_testgfx.c"     # built-in graphics smoke test
         "snd_port.c"        # breezy_sound hardware port (ES8156 via badge-bsp)
         "elf_extras.c"      # extra symbols exported to ELF apps
+        "usb_midi.c"        # `midi` debug command: USB host port + MIDI dump
 
     PRIV_REQUIRES
         # Core
@@ -16,6 +17,7 @@ idf_component_register(
         vfs
         nvs_flash
         esp_timer
+        usb
         # BreezyBox stack
         breezybox
         breezy_term

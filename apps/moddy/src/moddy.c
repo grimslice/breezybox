@@ -7,7 +7,7 @@
  *
  *   Space       pause / resume
  *   Up / Down   previous / next .mod in the same directory
- *   Left/Right  volume down / up (over 100% adds soft-clip compression)
+ *   Left/Right  volume down / up
  *   q / Esc / Ctrl-C   quit
  *
  * The current song loops until the user switches or quits. All keys come
@@ -19,7 +19,7 @@
  * snapshot per chunk), then poll keys and redraw at ~30 fps. The displayed
  * snapshot is the one matching the audio the speaker is playing *now*
  * (frames_written - frames_queued), so visuals track the audible beat, not
- * the decoder, which runs ~93 ms ahead. See PRD_adapt.md.
+ * the decoder, which runs ~93 ms ahead.
  *
  * Portability rule (same as breezybox modplay): only the exported symbol
  * surface below (snd_*, vTaskDelay) plus libc, dirent and breezy_tui.
@@ -50,6 +50,7 @@ int  snd_stream_open(int rate, int channels);
 int  snd_stream_space(void);
 int  snd_stream_write(const int16_t *frames, int nframes);
 void snd_stream_close(void);
+void snd_set_volume(int pct);   /* 0..100 percent */
 
 typedef uint32_t TickType_t;
 void vTaskDelay(TickType_t ticks);
@@ -59,7 +60,7 @@ void vTaskDelay(TickType_t ticks);
 #define DRAW_EVERY_FRAMES (SAMPLE_RATE / 30) /* ~30 fps, audio-clocked */
 
 #define VOL_STEP 10
-#define VOL_MAX  200   /* percent; >100 engages the soft clipper */
+#define VOL_MAX  100
 
 #define MAX_TRACKS 128
 #define PATH_MAX_LEN 256
@@ -154,26 +155,16 @@ static bool load_track(int idx, void **data)
     return true;
 }
 
-/* --- volume: linear gain up to 100%, cubic soft clipper above --- */
+/* The firmware mixer owns master volume; moddy just hands it a normalized
+ * full-scale int16 signal and pushes g_vol on change (kept for the UI). */
 
 static int g_vol = 100;
 
-/* Convert one float sample to int16 at gain g_vol/100. Above 100% the
- * signal passes through y - y^3/6.75 (unity slope at 0, smooth saturation
- * reaching full scale at |y| = 1.5): quiet passages get the full extra
- * gain, peaks compress instead of clipping. The device mixer does its own
- * final limiting; this only shapes what we hand it. */
-static inline int16_t sample_out(float x, float gain, bool compress)
+static inline int16_t sample_out(float x)
 {
-    float y = x * gain;
-    if (compress) {
-        if (y > 1.5f) y = 1.5f;
-        else if (y < -1.5f) y = -1.5f;
-        y = y - y * y * y * (1.0f / 6.75f);
-    }
-    if (y > 1.0f) y = 1.0f;
-    else if (y < -1.0f) y = -1.0f;
-    return (int16_t)(y * 32767.0f);
+    if (x > 1.0f) x = 1.0f;
+    else if (x < -1.0f) x = -1.0f;
+    return (int16_t)(x * 32767.0f);
 }
 
 static void capture_snap(uint32_t pos)
@@ -239,6 +230,7 @@ int main(int argc, char **argv)
         free(data);
         return 1;
     }
+    snd_set_volume(g_vol);
     if (tui_init() != 0) {
         snd_stream_close();
         printf("moddy: tui init failed (not a tty?)\n");
@@ -265,10 +257,8 @@ int main(int argc, char **argv)
                 int bytes = pocketmod_render(
                     &g_ctx, g_fbuf, space * (int)POCKETMOD_SAMPLE_SIZE);
                 int frames = bytes / (int)POCKETMOD_SAMPLE_SIZE;
-                float gain = (float)g_vol * 0.01f;
-                bool compress = g_vol > 100;
                 for (int i = 0; i < frames * 2; i++)
-                    g_ibuf[i] = sample_out(g_fbuf[i], gain, compress);
+                    g_ibuf[i] = sample_out(g_fbuf[i]);
                 written += (uint32_t)snd_stream_write(g_ibuf, frames);
             }
         }
@@ -286,10 +276,14 @@ int main(int argc, char **argv)
             quit = true;
         else if (k.kind == TUI_KEY_CHAR && k.ch == ' ')
             paused = !paused;
-        else if (k.kind == TUI_KEY_LEFT && g_vol > 0)
+        else if (k.kind == TUI_KEY_LEFT && g_vol > 0) {
             g_vol -= VOL_STEP;
-        else if (k.kind == TUI_KEY_RIGHT && g_vol < VOL_MAX)
+            snd_set_volume(g_vol);
+        }
+        else if (k.kind == TUI_KEY_RIGHT && g_vol < VOL_MAX) {
             g_vol += VOL_STEP;
+            snd_set_volume(g_vol);
+        }
         else if (k.kind == TUI_KEY_UP)
             switch_to = (cur - 1 + g_ntracks) % g_ntracks;
         else if (k.kind == TUI_KEY_DOWN)

@@ -11,18 +11,19 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_log.h"
 #include "driver/i2s_common.h"
+#include "driver/i2s_std.h"
 
 #include "bsp/audio.h"
 #include "bsp/input.h"
 
 static const char *TAG = "snd_port";
 
-#define MASTER_VOLUME_PCT 70   /* codec hardware volume */
+#define MASTER_VOLUME_PCT 100   /* codec hardware volume */
 
 /* limit_peak: what the tiny Tanmatsu speaker reproduces cleanly. */
 const snd_port_desc_t snd_port_desc = {
     .stereo     = true,
-    .limit_peak = 16000,
+    .limit_peak = 32767,
 };
 
 static i2s_chan_handle_t g_i2s = NULL;
@@ -41,6 +42,18 @@ esp_err_t snd_port_init(void)
      * output stopped until the first note, so park it. */
     bsp_audio_set_amplifier(false);
     i2s_channel_disable(g_i2s);
+
+    /* The BSP configures the I2S slot as MSB-justified, but it puts the
+     * ES8156 in standard Philips mode (sdp sp_protocal=0). The one-bit
+     * misalignment makes the codec read every sample doubled, wrapping sign
+     * at +/-16384. Reconfigure our side to Philips to match the codec. */
+    i2s_std_slot_config_t slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(
+        I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO);
+    esp_err_t serr = i2s_channel_reconfig_std_slot(g_i2s, &slot_cfg);
+    if (serr != ESP_OK) {
+        ESP_LOGE(TAG, "I2S slot reconfig failed: %s", esp_err_to_name(serr));
+        return serr;
+    }
     return ESP_OK;
 }
 

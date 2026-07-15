@@ -1,5 +1,5 @@
-version: "1.0.0"
-description: "breezy_sound: 8-voice synth mixer and PCM stream API used in BreezyBox, a mini shell for esp32"
+version: "1.1.0"
+description: "breezy_sound: 8-voice synth mixer, PICO-8 sfx/music tracker, and PCM stream API used in BreezyBox, a mini shell for esp32"
 url: "https://github.com/valdanylchuk/breezybox/tree/main/src/components/breezy_sound"
 repository: "https://github.com/valdanylchuk/breezybox.git"
 documentation: "https://github.com/valdanylchuk/tree/main/src/components/breezy_sound#readme"

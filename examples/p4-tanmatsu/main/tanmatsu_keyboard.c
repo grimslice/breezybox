@@ -169,6 +169,18 @@ static bsp_input_scancode_t hid_to_scancode(uint8_t hid)
         case 0x2A: return BSP_INPUT_SCANCODE_BACKSPACE;
         case 0x2B: return BSP_INPUT_SCANCODE_TAB;
         case 0x2C: return BSP_INPUT_SCANCODE_SPACE;
+        /* Punctuation (unshifted). */
+        case 0x2D: return BSP_INPUT_SCANCODE_MINUS;
+        case 0x2E: return BSP_INPUT_SCANCODE_EQUAL;
+        case 0x2F: return BSP_INPUT_SCANCODE_LEFTBRACE;
+        case 0x30: return BSP_INPUT_SCANCODE_RIGHTBRACE;
+        case 0x31: return BSP_INPUT_SCANCODE_BACKSLASH;
+        case 0x33: return BSP_INPUT_SCANCODE_SEMICOLON;
+        case 0x34: return BSP_INPUT_SCANCODE_APOSTROPHE;
+        case 0x35: return BSP_INPUT_SCANCODE_GRAVE;
+        case 0x36: return BSP_INPUT_SCANCODE_COMMA;
+        case 0x37: return BSP_INPUT_SCANCODE_DOT;
+        case 0x38: return BSP_INPUT_SCANCODE_SLASH;
         /* Arrows (the "grey" escaped scancodes). */
         case 0x4F: return BSP_INPUT_SCANCODE_ESCAPED_GREY_RIGHT;
         case 0x50: return BSP_INPUT_SCANCODE_ESCAPED_GREY_LEFT;

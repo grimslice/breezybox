@@ -45,6 +45,14 @@ CONFIG_SPI_FLASH_SUPPORT_WINBOND_CHIP=y
 # --- Console: keep a parallel USB-Serial-JTAG console for logs/debug ---
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 
+# --- USB host (USB-A port, `midi` command) ---
+# The launcher enables hub support; without it the stack ignores any hub
+# (possibly including one between the P4 and the USB-A jack).
+CONFIG_USB_HOST_HUBS_SUPPORTED=y
+# Allow DEBUG logs to be enabled at runtime (esp_log_level_set); with
+# MAXIMUM=INFO they are compiled out and USB root-port activity is invisible.
+CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y
+
 # --- Terminal geometry: 800x480 / 8x16 Terminus = 100 cols x 30 rows ---
 # (Kconfig options added to valdanylchuk/breezy_term; defaults stay 128x37.)
 CONFIG_VTERM_COLS=100

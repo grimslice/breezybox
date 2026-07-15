@@ -27,6 +27,7 @@
 
 #include "my_console_io.h"
 #include "snd_core.h"
+#include "snd_p8.h"
 #include "snd_port.h"
 
 #ifdef vTaskDelayUntil
@@ -89,4 +90,9 @@ void breezy_p4_export_symbols(void)
     s_export_sink = (const void *)snd_stream_space;
     s_export_sink = (const void *)snd_stream_write;
     s_export_sink = (const void *)snd_stream_close;
+    /* PICO-8 tracker API (game ports; snd_p8.h). */
+    s_export_sink = (const void *)snd_p8_load;
+    s_export_sink = (const void *)snd_p8_sfx;
+    s_export_sink = (const void *)snd_p8_music;
+    s_export_sink = (const void *)snd_p8_stop;
 }

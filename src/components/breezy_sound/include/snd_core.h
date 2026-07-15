@@ -46,19 +46,19 @@ int snd_note_on(int voice, float freq_hz, int wave, int vol);
 /* Release a note (envelope fades it out). */
 void snd_note_off(int voice);
 
-/* Release everything, including an open PCM stream (call when an
- * app/command exits). */
+/* Release everything: all voices, an open PCM stream, and any PICO-8
+ * tracker playback (snd_p8.h). Call when an app/command exits. */
 void snd_all_off(void);
 
-/* Master volume, 0-100%. Pure attenuation after the limiter: 100% is the
- * limit-bounded default level and cannot be exceeded. */
+/* Master volume, 0..100 percent, applied to the final combined bus
+ * (synth voices + PCM stream). Defaults to 100 at startup. */
 void snd_set_volume(int pct);
 int  snd_get_volume(void);
 
 /*
  * PCM stream: one raw int16 stream mixed in as a 9th source alongside the
- * synth voices (added after the synth's limiter -- stream material is
- * expected to be pre-mastered). Single stream, single owner. The app
+ * synth voices. Apps render at normal int16 full scale; the mixer owns the
+ * mapping to each board's output. Single stream, single owner. The app
  * renders at its own pace, polling snd_stream_space() from its main loop;
  * underrun plays silence, never stalls. Master volume applies. On boards
  * with mono output, stereo input is downmixed to (L+R)/2.

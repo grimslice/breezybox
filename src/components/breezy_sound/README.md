@@ -1,10 +1,21 @@
 # breezy_sound
 
-The BreezyBox sound engine: an 8-voice PICO-8-flavored synth mixer plus a
-single raw PCM stream, mixed by a background task at 44.1 kHz s16 and fed to
-the board's audio output. `snd_core.h` is the API that loadable ELF apps
-(soundkeys, moddy, ...) link against by symbol name, so it stays identical
-across boards.
+The BreezyBox sound engine: an 8-voice PICO-8-flavored synth mixer, a
+4-channel PICO-8 sfx/music tracker for game ports, and a single raw PCM
+stream, mixed by a background task at 44.1 kHz s16 and fed to the board's
+audio output. `snd_core.h` and `snd_p8.h` are the APIs that loadable ELF
+apps (soundkeys, moddy, game ports, ...) link against by symbol name, so
+they stay identical across boards.
+
+Three front ends, one fixed-point oscillator core (`snd_osc.h`, waveform
+shapes and amplitudes measured against PICO-8 via zepto8):
+
+- `snd_note_on/off` — live voices with attack/release envelopes (music
+  keyboards, synth apps)
+- `snd_p8_load/sfx/music/stop` — fire-and-forget PICO-8 cart sound: load
+  the sfx/pattern data once, then call `sfx()`/`music()` like the cart does;
+  sequencing runs inside the mixer task
+- `snd_stream_*` — raw PCM for apps that render their own audio (modplay)
 
 The engine is hardware-agnostic. Each firmware project supplies one
 `snd_port.c` implementing the small contract in `snd_port.h`:

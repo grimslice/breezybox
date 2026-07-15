@@ -105,6 +105,7 @@ static int cmd_netup(int argc, char **argv)
 }
 
 extern int cmd_testgfx(int argc, char **argv);    /* cmd_testgfx.c */
+extern void usb_midi_register_command(void);      /* usb_midi.c */
 
 static void register_commands(void)
 {
@@ -119,6 +120,7 @@ static void register_commands(void)
     for (size_t i = 0; i < sizeof(cmds) / sizeof(cmds[0]); i++) {
         esp_console_cmd_register(&cmds[i]);
     }
+    usb_midi_register_command();
 }
 
 void app_main(void)
