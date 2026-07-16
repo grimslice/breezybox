@@ -11,7 +11,11 @@
  *         The BSP reports the plain letter in `ascii` and Ctrl only in
  *         `modifiers`, so we fold it here.
  *       - NAVIGATION events -> Enter, Backspace, Tab, Esc, and the arrow
- *         escape sequences.
+ *         escape sequences. Shift/Ctrl/Alt+arrows emit the xterm modified
+ *         forms (CSI 1;<m> X); Fn+arrows become Home/End/PgUp/PgDn. Held
+ *         navigation keys auto-repeat (200 ms, then ~30/s) — the BSP only
+ *         sends press/release, so repeats are synthesized here by polling
+ *         the live matrix.
  *     vterm_input_feed() also recognizes its own VT-switch hotkey sequences, so
  *     those keep working too.
  *
@@ -22,10 +26,13 @@
  *     no Bluetooth involved. We keep the bt_keyboard_*() symbol names so that
  *     unmodified games (which link against them) load unchanged.
  *
- * MVP scope for the shell path: basic typing + line editing + Ctrl combos.
- * Modifier layers beyond Ctrl, function keys and special Tanmatsu keys are
- * intentionally not mapped yet.
+ * MVP scope for the shell path: basic typing + line editing + Ctrl combos +
+ * modified navigation keys. Function keys and special Tanmatsu keys are
+ * intentionally not mapped yet; ascii keys don't auto-repeat (the KEYBOARD
+ * event carries no scancode to poll held-state by).
  */
+
+#include <string.h>
 
 #include "tanmatsu_keyboard.h"
 #include "vterm.h"
@@ -34,6 +41,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 
 #include "bsp/input.h"
 
@@ -61,20 +69,104 @@ static void handle_keyboard(const bsp_input_event_args_keyboard_t *k)
     if (a >= 0x20 && a < 0x7f) vterm_input_feed(a);
 }
 
+/* Auto-repeat for held navigation keys. The BSP sends a single press event
+ * and a release event with no repeats in between, so we synthesize them:
+ * kbd_task polls the live key state while a repeatable key is down and
+ * re-feeds its sequence at REPEAT_HZ after an initial threshold. */
+#define REPEAT_DELAY_US  200000  /* hold this long before repeating */
+#define REPEAT_PERIOD_US 33000   /* then ~30 repeats/sec */
+
+static struct {
+    bool active;
+    bsp_input_navigation_key_t key;
+    char seq[12];
+    int64_t next_us;
+} s_repeat;
+
+/* Cursor keys: emit xterm-style sequences, with the modifier parameter
+ * (CSI 1;<m> X, m-1 = shift|alt<<1|ctrl<<2) when any modifier is held, so
+ * apps can see Shift/Ctrl/Alt+arrows. `final` is the CSI final byte
+ * ('A'..'D' arrows, 'H'/'F' home/end) or the tilde-sequence number as a
+ * negative value (-5 = PgUp "CSI 5 ~", -6 = PgDn). */
+static void feed_cursor(int final, uint32_t mods, char *out_seq)
+{
+    int m = 1;
+    if (mods & BSP_INPUT_MODIFIER_SHIFT) m += 1;
+    if (mods & BSP_INPUT_MODIFIER_ALT)   m += 2;
+    if (mods & BSP_INPUT_MODIFIER_CTRL)  m += 4;
+
+    /* Both n (5/6) and m (1..8) are single digits; build the sequence
+     * by hand to keep -Wformat-truncation happy. */
+    char buf[8];
+    int i = 0;
+    buf[i++] = 0x1b;
+    buf[i++] = '[';
+    buf[i++] = final < 0 ? (char)('0' - final) : '1';
+    if (m > 1) {
+        buf[i++] = ';';
+        buf[i++] = (char)('0' + m);
+    } else if (final >= 0) {
+        i = 2;  /* unmodified cursor key: plain CSI <final> */
+    }
+    buf[i++] = final < 0 ? '~' : (char)final;
+    buf[i] = 0;
+    feed_seq(buf);
+    if (out_seq) strcpy(out_seq, buf);
+}
+
 static void handle_navigation(const bsp_input_event_args_navigation_t *n)
 {
-    if (!n->state) return;  /* key-down only */
-    switch (n->key) {
-        case BSP_INPUT_NAVIGATION_KEY_RETURN:    vterm_input_feed('\r');   break;
-        case BSP_INPUT_NAVIGATION_KEY_BACKSPACE: vterm_input_feed(0x7f);   break;
-        case BSP_INPUT_NAVIGATION_KEY_TAB:       vterm_input_feed('\t');   break;
-        case BSP_INPUT_NAVIGATION_KEY_ESC:       vterm_input_feed(0x1b);   break;
-        case BSP_INPUT_NAVIGATION_KEY_UP:        feed_seq("\x1b[A");       break;
-        case BSP_INPUT_NAVIGATION_KEY_DOWN:      feed_seq("\x1b[B");       break;
-        case BSP_INPUT_NAVIGATION_KEY_RIGHT:     feed_seq("\x1b[C");       break;
-        case BSP_INPUT_NAVIGATION_KEY_LEFT:      feed_seq("\x1b[D");       break;
-        default: break;
+    if (!n->state) {
+        if (s_repeat.active && n->key == s_repeat.key) s_repeat.active = false;
+        return;
     }
+
+    bool fn = (n->modifiers & BSP_INPUT_MODIFIER_FUNCTION) != 0;
+    uint32_t mods = n->modifiers;
+    char seq[12] = "";
+    int final = 0;
+
+    switch (n->key) {
+        case BSP_INPUT_NAVIGATION_KEY_RETURN:    vterm_input_feed('\r'); return;
+        case BSP_INPUT_NAVIGATION_KEY_TAB:
+            /* Shift-Tab as CSI Z (back-tab) */
+            if (mods & BSP_INPUT_MODIFIER_SHIFT) feed_seq("\x1b[Z");
+            else vterm_input_feed('\t');
+            return;
+        case BSP_INPUT_NAVIGATION_KEY_ESC:       vterm_input_feed(0x1b); return;
+        case BSP_INPUT_NAVIGATION_KEY_BACKSPACE:
+            vterm_input_feed(0x7f);
+            seq[0] = 0x7f;  /* repeatable */
+            break;
+        /* Fn+arrows: Home/End/PgUp/PgDn, like laptop keyboards. */
+        case BSP_INPUT_NAVIGATION_KEY_UP:    final = fn ? -5  : 'A'; break;
+        case BSP_INPUT_NAVIGATION_KEY_DOWN:  final = fn ? -6  : 'B'; break;
+        case BSP_INPUT_NAVIGATION_KEY_RIGHT: final = fn ? 'F' : 'C'; break;
+        case BSP_INPUT_NAVIGATION_KEY_LEFT:  final = fn ? 'H' : 'D'; break;
+        case BSP_INPUT_NAVIGATION_KEY_HOME:  final = 'H'; break;
+        case BSP_INPUT_NAVIGATION_KEY_END:   final = 'F'; break;
+        default: return;
+    }
+
+    if (final) feed_cursor(final, mods, seq);
+
+    s_repeat.active = true;
+    s_repeat.key = n->key;
+    strcpy(s_repeat.seq, seq);
+    s_repeat.next_us = esp_timer_get_time() + REPEAT_DELAY_US;
+}
+
+/* Called from kbd_task when the queue is idle and a repeatable key is down. */
+static void repeat_poll(void)
+{
+    if (!s_repeat.active || esp_timer_get_time() < s_repeat.next_us) return;
+    bool held = false;
+    if (bsp_input_read_navigation_key(s_repeat.key, &held) != ESP_OK || !held) {
+        s_repeat.active = false;  /* released (missed event) or read failed */
+        return;
+    }
+    feed_seq(s_repeat.seq);
+    s_repeat.next_us = esp_timer_get_time() + REPEAT_PERIOD_US;
 }
 
 static void kbd_task(void *arg)
@@ -89,12 +181,17 @@ static void kbd_task(void *arg)
 
     bsp_input_event_t ev;
     for (;;) {
-        if (xQueueReceive(q, &ev, portMAX_DELAY) != pdTRUE) continue;
-        switch (ev.type) {
-            case INPUT_EVENT_TYPE_KEYBOARD:   handle_keyboard(&ev.args_keyboard);     break;
-            case INPUT_EVENT_TYPE_NAVIGATION: handle_navigation(&ev.args_navigation); break;
-            default: break;
+        /* Block forever when idle; poll fast while a key is held so
+         * synthesized auto-repeats come out on time. */
+        TickType_t wait = s_repeat.active ? pdMS_TO_TICKS(5) : portMAX_DELAY;
+        if (xQueueReceive(q, &ev, wait) == pdTRUE) {
+            switch (ev.type) {
+                case INPUT_EVENT_TYPE_KEYBOARD:   handle_keyboard(&ev.args_keyboard);     break;
+                case INPUT_EVENT_TYPE_NAVIGATION: handle_navigation(&ev.args_navigation); break;
+                default: break;
+            }
         }
+        repeat_poll();
     }
 }
 
@@ -181,7 +278,9 @@ static bsp_input_scancode_t hid_to_scancode(uint8_t hid)
         case 0x36: return BSP_INPUT_SCANCODE_COMMA;
         case 0x37: return BSP_INPUT_SCANCODE_DOT;
         case 0x38: return BSP_INPUT_SCANCODE_SLASH;
-        /* Arrows (the "grey" escaped scancodes). */
+        /* Navigation cluster (the "grey" escaped scancodes). */
+        case 0x4A: return BSP_INPUT_SCANCODE_ESCAPED_GREY_HOME;
+        case 0x4D: return BSP_INPUT_SCANCODE_ESCAPED_GREY_END;
         case 0x4F: return BSP_INPUT_SCANCODE_ESCAPED_GREY_RIGHT;
         case 0x50: return BSP_INPUT_SCANCODE_ESCAPED_GREY_LEFT;
         case 0x51: return BSP_INPUT_SCANCODE_ESCAPED_GREY_DOWN;

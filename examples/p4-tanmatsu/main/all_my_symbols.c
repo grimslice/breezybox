@@ -920,6 +920,7 @@ extern int regi2c_write_impl;
 extern int rpc__resp__otawrite__init;
 extern int gdma_hal_start_with_desc;
 extern int mbedtls_ssl_add_hs_hdr_to_checksum;
+extern int __ashrdi3;
 extern int __divdi3;
 extern int efuse_hal_get_disable_wafer_version_major;
 extern int esp_vfs_fsync;
@@ -4992,6 +4993,7 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(rpc__resp__otawrite__init),
     ESP_ELFSYM_EXPORT(gdma_hal_start_with_desc),
     ESP_ELFSYM_EXPORT(mbedtls_ssl_add_hs_hdr_to_checksum),
+    ESP_ELFSYM_EXPORT(__ashrdi3),
     ESP_ELFSYM_EXPORT(__divdi3),
     ESP_ELFSYM_EXPORT(efuse_hal_get_disable_wafer_version_major),
     ESP_ELFSYM_EXPORT(esp_vfs_fsync),
