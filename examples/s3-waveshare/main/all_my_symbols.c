@@ -442,7 +442,9 @@ extern int cache_hal_resume;
 extern int _system_r;
 extern int __locale_mb_cur_max;
 extern int gdma_hal_start_with_desc;
+extern int __ashrdi3;
 extern int __divdi3;
+extern int __divsf3;
 extern int efuse_hal_get_disable_wafer_version_major;
 extern int esp_vfs_fsync;
 extern int esp_vfs_stat;
@@ -1088,7 +1090,6 @@ extern int spi_flash_chip_generic_config_host_io_mode;
 extern int atoi;
 extern int gpio_intr_enable;
 extern int _fputs_r;
-extern int gdma_hal_enable_access_encrypt_mem;
 extern int spicommon_irqsource_for_host;
 extern int gdma_ahb_hal_read_intr_status;
 extern int rtc_clk_32k_disable_external;
@@ -1595,7 +1596,6 @@ extern int pbuf_alloc_reference;
 extern int esp_elf_map_sym;
 extern int __retarget_lock_close_recursive;
 extern int uart_get_baudrate;
-extern int rom_spiflash_api_funcs;
 extern int esp_err_to_name;
 extern int tcp_update_rcv_ann_wnd;
 extern int __gtdf2;
@@ -2213,7 +2213,9 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(_system_r),
     ESP_ELFSYM_EXPORT(__locale_mb_cur_max),
     ESP_ELFSYM_EXPORT(gdma_hal_start_with_desc),
+    ESP_ELFSYM_EXPORT(__ashrdi3),
     ESP_ELFSYM_EXPORT(__divdi3),
+    ESP_ELFSYM_EXPORT(__divsf3),
     ESP_ELFSYM_EXPORT(efuse_hal_get_disable_wafer_version_major),
     ESP_ELFSYM_EXPORT(esp_vfs_fsync),
     ESP_ELFSYM_EXPORT(esp_vfs_stat),
@@ -2859,7 +2861,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(atoi),
     ESP_ELFSYM_EXPORT(gpio_intr_enable),
     ESP_ELFSYM_EXPORT(_fputs_r),
-    ESP_ELFSYM_EXPORT(gdma_hal_enable_access_encrypt_mem),
     ESP_ELFSYM_EXPORT(spicommon_irqsource_for_host),
     ESP_ELFSYM_EXPORT(gdma_ahb_hal_read_intr_status),
     ESP_ELFSYM_EXPORT(rtc_clk_32k_disable_external),
@@ -3366,7 +3367,6 @@ const struct esp_elfsym g_customer_elfsyms[] = {
     ESP_ELFSYM_EXPORT(esp_elf_map_sym),
     ESP_ELFSYM_EXPORT(__retarget_lock_close_recursive),
     ESP_ELFSYM_EXPORT(uart_get_baudrate),
-    ESP_ELFSYM_EXPORT(rom_spiflash_api_funcs),
     ESP_ELFSYM_EXPORT(esp_err_to_name),
     ESP_ELFSYM_EXPORT(tcp_update_rcv_ann_wnd),
     ESP_ELFSYM_EXPORT(__gtdf2),
