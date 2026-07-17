@@ -8,4 +8,4 @@ dependencies:
   valdanylchuk/breezy_rgb_lcd:
      version: '>=1.0.1'
   valdanylchuk/breezy_sound:
-     version: '>=1.1.0'
+     version: '>=1.1.1'
